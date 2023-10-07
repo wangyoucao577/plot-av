@@ -203,8 +203,8 @@ class AVPlotter:
             ncols = nrows = 3
             subplots_2d = [
                 subplots[:ncols],
-                subplots[ncols : ncols * 2],
-                subplots[ncols * 2 :],
+                subplots[ncols: ncols * 2],
+                subplots[ncols * 2:],
             ]
 
         for i in range(nrows):
@@ -214,7 +214,7 @@ class AVPlotter:
 
         return (ncols, nrows, subplots_2d)
 
-    def plot(self, subplots):
+    def plot(self, subplots, dpi=None):
         # layout
         (ncols, nrows, subplots_2d) = self.decide_layout(subplots)
         # print(subplots_2d)
@@ -230,6 +230,8 @@ class AVPlotter:
             plot_func(axs[p])
 
         # fig.align_labels()
+        if dpi is not None:
+            fig.dpi = dpi
         plt.show()
 
     def plot_dts(self, ax):
@@ -397,10 +399,14 @@ class AVPlotter:
 def process_args():
     PLOT_SPLIT_DELIMETER = ","
     available_subplots = AVPlotter().available_subplots()
-    available_subplots_options_str = PLOT_SPLIT_DELIMETER.join(available_subplots)
+    available_subplots_options_str = PLOT_SPLIT_DELIMETER.join(
+        available_subplots)
 
     parser = argparse.ArgumentParser(description="plot timestamps.")
-    parser.add_argument("-i", required=True, help="input file url", dest="input")
+    parser.add_argument("-i", required=True,
+                        help="input file url", dest="input")
+    parser.add_argument("--dpi", required=False, type=int,
+                        help="resolution of the figure. If not provided, defaults to 100 by matplotlib.")
     parser.add_argument(
         "--plots",
         required=False,
@@ -455,13 +461,14 @@ def main():
             a_stream = s
 
     # plot
-    window_title = os.path.basename(__file__) + " - " + os.path.basename(args.input)
+    window_title = os.path.basename(
+        __file__) + " - " + os.path.basename(args.input)
     av_plotter = AVPlotter(
         window_title,
         v_stream,
         a_stream,
     )
-    av_plotter.plot(args.plots)
+    av_plotter.plot(args.plots, args.dpi)
 
 
 if __name__ == "__main__":
