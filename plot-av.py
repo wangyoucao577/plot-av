@@ -203,8 +203,8 @@ class AVPlotter:
             ncols = nrows = 3
             subplots_2d = [
                 subplots[:ncols],
-                subplots[ncols: ncols * 2],
-                subplots[ncols * 2:],
+                subplots[ncols : ncols * 2],
+                subplots[ncols * 2 :],
             ]
 
         for i in range(nrows):
@@ -399,14 +399,16 @@ class AVPlotter:
 def process_args():
     PLOT_SPLIT_DELIMETER = ","
     available_subplots = AVPlotter().available_subplots()
-    available_subplots_options_str = PLOT_SPLIT_DELIMETER.join(
-        available_subplots)
+    available_subplots_options_str = PLOT_SPLIT_DELIMETER.join(available_subplots)
 
     parser = argparse.ArgumentParser(description="plot timestamps.")
-    parser.add_argument("-i", required=True,
-                        help="input file url", dest="input")
-    parser.add_argument("--dpi", required=False, type=int,
-                        help="resolution of the figure. If not provided, defaults to 100 by matplotlib.")
+    parser.add_argument("-i", required=True, help="input file url", dest="input")
+    parser.add_argument(
+        "--dpi",
+        required=False,
+        type=int,
+        help="resolution of the figure. If not provided, defaults to 100 by matplotlib.",
+    )
     parser.add_argument(
         "--plots",
         required=False,
@@ -461,8 +463,7 @@ def main():
             a_stream = s
 
     # plot
-    window_title = os.path.basename(
-        __file__) + " - " + os.path.basename(args.input)
+    window_title = os.path.basename(__file__) + " - " + os.path.basename(args.input)
     av_plotter = AVPlotter(
         window_title,
         v_stream,
