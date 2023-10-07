@@ -1,0 +1,7 @@
+{
+    "editor.formatOnSave": true, // Use clangd's internal clang-format engine
+    "json.maxItemsComputed": 50000,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    }
+}
