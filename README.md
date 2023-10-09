@@ -36,7 +36,7 @@ python -m pip install -U matplotlib
 python plot-av.py -i test.mp4
 ```
 
-- Partial subplots
+- Draw your interested subplots only
 
 ```bash
 python plot-av.py -i test.mp4 --plots dts,pts
