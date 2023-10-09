@@ -1,7 +1,10 @@
 # plot-av
-Plot Audio/Video streams.
+Plot details of Audio/Video streams of media files to help you gain better insights of them.      
+
+## Example
 
 ![](docs/images/plot-av.png)
+
 
 ## Installation 
 
