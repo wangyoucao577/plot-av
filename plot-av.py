@@ -77,20 +77,27 @@ def process_args():
     return args
 
 
-def select_stream(input_index, disable=None, select=None):
+def select_stream(streams, input_index, disable=None, selection=None):
     if disable:
         return None
 
-    if select is None:
-        return 0  # auto selected first one
-
-    if select[0] != input_index:  # input index not match
+    if not streams:  # no stream available
         return None
 
-    return select[1]
+    if selection is None:  # auto selected first one
+        return streams[0]
+
+    # manually selection
+    if selection[0] != input_index:  # input index not match
+        return None
+
+    if len(streams) <= selection[1]:  # stream index not match
+        return None
+
+    return streams[selection[1]]
 
 
-def produce_streams(
+def produce_streams_info(
     inputs,
     disable_video,
     video_stream_selection,
@@ -102,42 +109,33 @@ def produce_streams(
     for input_index, input in enumerate(inputs):
         with av.open(input) as container:
             # select streams
-            selected_video_index = selected_audio_index = None
+            selected_streams = []
             if v_stream_info is None:
-                selected_video_index = select_stream(
+                selected_video_stream = select_stream(
+                    container.streams.video,
                     input_index=input_index,
                     disable=disable_video,
-                    select=video_stream_selection,
+                    selection=video_stream_selection,
                 )
-                if selected_video_index is not None:
-                    selected_video_stream = container.streams.get(
-                        video=selected_video_index
-                    )
-                    v_stream_info = StreamInfo(selected_video_stream[0])
+                if selected_video_stream is not None:
+                    v_stream_info = StreamInfo(selected_video_stream)
+                    selected_streams.append(selected_video_stream)
             if a_stream_info is None:
-                selected_audio_index = select_stream(
+                selected_audio_stream = select_stream(
+                    container.streams.audio,
                     input_index=input_index,
                     disable=disable_audio,
-                    select=audio_stream_selection,
+                    selection=audio_stream_selection,
                 )
-                if selected_audio_index is not None:
-                    selected_audio_stream = container.streams.get(
-                        audio=selected_audio_index
-                    )
-                    a_stream_info = StreamInfo(selected_audio_stream[0])
+                if selected_audio_stream is not None:
+                    a_stream_info = StreamInfo(selected_audio_stream)
+                    selected_streams.append(selected_audio_stream)
 
-            if selected_video_index is None and selected_audio_index is None:
+            if not selected_streams:  # no need demux the input
                 continue
 
             # retrieve info from packets
-            for packet in container.demux(
-                video=(
-                    selected_video_index if selected_video_index is not None else []
-                ),
-                audio=(
-                    selected_audio_index if selected_audio_index is not None else []
-                ),
-            ):
+            for packet in container.demux(selected_streams):
                 # print(packet)
                 if packet.size == 0:
                     continue  # empty packet for flushing, ignore it
@@ -166,7 +164,7 @@ def main():
     args = process_args()
 
     # retrieve a/v stream info
-    (v_stream_info, a_stream_info) = produce_streams(
+    (v_stream_info, a_stream_info) = produce_streams_info(
         args.input,
         args.vn,
         args.video_stream,
