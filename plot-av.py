@@ -18,6 +18,12 @@ class StreamInfo:
         # numpy array
         self.npdata = None
 
+        # for statistics
+        self.interval = 1.0
+
+    def set_interval(self, interval):
+        self.interval = interval
+
     def capture_by_packet(self, packet):
         self.raw_data_list.append(
             [packet.dts, packet.pts, packet.duration, packet.size]
@@ -57,7 +63,7 @@ class StreamInfo:
         return dts_delta * self.time_base
 
     def calc_bitrate_in_kbps(self):
-        interval = 1 / self.time_base  # 1 second
+        interval = self.interval / self.time_base
 
         data_array = []
 
@@ -71,17 +77,20 @@ class StreamInfo:
                 size = 0
             size += d[3]
 
+        if size > 0:  # last interval
+            data_array.append([start_ts, size])
+
         bitrate = np.array(
             data_array,
             dtype=np.float64,
         ).transpose()
         bitrate[0] = bitrate[0] * self.time_base  # seconds
-        bitrate[1] = bitrate[1] * 8 / 1024  # kbps
+        bitrate[1] = bitrate[1] * 8 / 1024 / self.interval  # kbps
 
         return bitrate
 
     def calc_fps(self):
-        interval = 1 / self.time_base  # 1 second
+        interval = self.interval / self.time_base  # 1 second
 
         data_array = []
 
@@ -95,11 +104,15 @@ class StreamInfo:
                 size = 0
             size += 1
 
+        if size > 0:  # last interval
+            data_array.append([start_ts, size])
+
         fps = np.array(
             data_array,
             dtype=np.float64,
         ).transpose()
         fps[0] = fps[0] * self.time_base  # seconds
+        fps[1] = fps[1] / self.interval  # fps
 
         return fps
 
@@ -401,7 +414,10 @@ def process_args():
     available_subplots = AVPlotter().available_subplots()
     available_subplots_options_str = PLOT_SPLIT_DELIMETER.join(available_subplots)
 
-    parser = argparse.ArgumentParser(description="plot timestamps.")
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description="plot audio/video streams.",
+    )
     parser.add_argument(
         "-i", required=True, action="append", help="input file url", dest="input"
     )
@@ -409,7 +425,6 @@ def process_args():
     video_selection_group.add_argument(
         "-vs",
         "--video_stream",
-        required=False,
         nargs=2,
         type=int,
         metavar=("INPUT_INDEX", "STREAM_INDEX"),
@@ -422,7 +437,6 @@ def process_args():
     audio_selection_group.add_argument(
         "-as",
         "--audio_stream",
-        required=False,
         nargs=2,
         type=int,
         metavar=("INPUT_INDEX", "STREAM_INDEX"),
@@ -433,15 +447,19 @@ def process_args():
     )
     parser.add_argument(
         "--dpi",
-        required=False,
         type=int,
         help="resolution of the figure. If not provided, defaults to 100 by matplotlib.",
     )
     parser.add_argument(
         "--plots",
-        required=False,
         default=available_subplots_options_str,
         help=f"subplots to show, seperate by ','. options: {available_subplots_options_str}",
+    )
+    parser.add_argument(
+        "--interval",
+        type=float,
+        default=1.0,
+        help="calculation interval in seconds for statistics metrics, such as bitrate, fps, etc.",
     )
     args = parser.parse_args()
     # print(args)
@@ -476,7 +494,12 @@ def select_stream(input_index, disable=None, select=None):
 
 
 def produce_streams(
-    inputs, disable_video, video_stream_selection, disable_audio, audio_stream_selection
+    inputs,
+    disable_video,
+    video_stream_selection,
+    disable_audio,
+    audio_stream_selection,
+    interval,
 ):
     v_stream_info = a_stream_info = None
 
@@ -536,8 +559,10 @@ def produce_streams(
 
     # finalize data
     if v_stream_info is not None:
+        v_stream_info.set_interval(interval)
         v_stream_info.finalize()
     if a_stream_info is not None:
+        a_stream_info.set_interval(interval)
         a_stream_info.finalize()
 
     return (v_stream_info, a_stream_info)
@@ -548,7 +573,12 @@ def main():
 
     # retrieve a/v stream info
     (v_stream_info, a_stream_info) = produce_streams(
-        args.input, args.vn, args.video_stream, args.an, args.audio_stream
+        args.input,
+        args.vn,
+        args.video_stream,
+        args.an,
+        args.audio_stream,
+        args.interval,
     )
 
     # plot
