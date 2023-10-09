@@ -1,8 +1,11 @@
 # plot-av
-Plot A/V streams.
+Plot Audio/Video streams.
+
+![](docs/images/plot-av.png)
 
 ## Installation 
 
+### Prerequisites
 - Latest [Python](https://www.python.org/downloads/)
 - [pyav](https://pyav.org/docs/stable/)
 - [matplotlib](https://matplotlib.org/)
@@ -24,9 +27,14 @@ python -m pip install -U matplotlib
 
 ## Usage
 
-```bash
-# plot a/v streams
-python plot-av.py -i test.mp4
+- Basic 
 
+```bash
+python plot-av.py -i test.mp4
 ```
 
+- Partial subplots
+
+```bash
+python plot-av.py -i test.mp4 --plots dts,pts
+```
