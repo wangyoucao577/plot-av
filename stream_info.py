@@ -14,12 +14,6 @@ class StreamInfo:
         # numpy array
         self.npdata = None
 
-        # for statistics
-        self.interval = 1.0
-
-    def set_interval(self, interval):
-        self.interval = interval
-
     def capture_by_packet(self, packet):
         self.raw_data_list.append(
             [packet.dts, packet.pts, packet.duration, packet.size]
@@ -58,8 +52,8 @@ class StreamInfo:
         dts_delta = dts_delta - self.npdata[0]
         return dts_delta * self.time_base
 
-    def calc_bitrate_in_kbps(self):
-        interval = self.interval / self.time_base
+    def calc_bitrate_in_kbps(self, interval_in_seconds=1.0):
+        interval = interval_in_seconds / self.time_base
 
         data_array = []
 
@@ -81,12 +75,12 @@ class StreamInfo:
             dtype=np.float64,
         ).transpose()
         bitrate[0] = bitrate[0] * self.time_base  # seconds
-        bitrate[1] = bitrate[1] * 8 / 1024 / self.interval  # kbps
+        bitrate[1] = bitrate[1] * 8 / 1024 / interval_in_seconds  # kbps
 
         return bitrate
 
-    def calc_fps(self):
-        interval = self.interval / self.time_base  # 1 second
+    def calc_fps(self, interval_in_seconds=1.0):
+        interval = interval_in_seconds / self.time_base  # 1 second
 
         data_array = []
 
@@ -108,6 +102,6 @@ class StreamInfo:
             dtype=np.float64,
         ).transpose()
         fps[0] = fps[0] * self.time_base  # seconds
-        fps[1] = fps[1] / self.interval  # fps
+        fps[1] = fps[1] / interval_in_seconds  # fps
 
         return fps

@@ -65,6 +65,10 @@ class AVPlotter:
         self.a_stream = a_stream
         self.window_title = window_title
 
+        # for statistics
+        self.interval = 1.0
+
+        # subplots
         self.subplots = {
             "dts": self.plot_dts,
             "pts": self.plot_pts,
@@ -75,6 +79,9 @@ class AVPlotter:
             "dts_delta": self.plot_dts_delta,
             "duration": self.plot_duration,
         }
+
+    def set_interval(self, interval):
+        self.interval = interval
 
     def available_subplots(self):
         return self.subplots.keys()
@@ -195,7 +202,7 @@ class AVPlotter:
         ax.set_xlabel("decode time (s)", loc="right")
         ax.set_ylabel("bitrate (kbps)")
         if self.v_stream:
-            v_bitrate_array = self.v_stream.calc_bitrate_in_kbps()
+            v_bitrate_array = self.v_stream.calc_bitrate_in_kbps(self.interval)
             ax.plot(
                 v_bitrate_array[0],
                 v_bitrate_array[1],
@@ -203,7 +210,7 @@ class AVPlotter:
                 label="video",
             )
         if self.a_stream:
-            a_bitrate_array = self.a_stream.calc_bitrate_in_kbps()
+            a_bitrate_array = self.a_stream.calc_bitrate_in_kbps(self.interval)
             ax.plot(
                 a_bitrate_array[0],
                 a_bitrate_array[1],
@@ -218,7 +225,7 @@ class AVPlotter:
         ax.set_xlabel("decode time (s)", loc="right")
         ax.set_ylabel("fps")
         if self.v_stream:
-            v_fps_array = self.v_stream.calc_fps()
+            v_fps_array = self.v_stream.calc_fps(self.interval)
             ax.plot(
                 v_fps_array[0],
                 v_fps_array[1],
@@ -226,7 +233,7 @@ class AVPlotter:
                 label="video",
             )
         if self.a_stream:
-            a_fps_array = self.a_stream.calc_fps()
+            a_fps_array = self.a_stream.calc_fps(self.interval)
             ax.plot(
                 a_fps_array[0],
                 a_fps_array[1],

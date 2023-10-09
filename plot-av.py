@@ -96,7 +96,6 @@ def produce_streams(
     video_stream_selection,
     disable_audio,
     audio_stream_selection,
-    interval,
 ):
     v_stream_info = a_stream_info = None
 
@@ -156,10 +155,8 @@ def produce_streams(
 
     # finalize data
     if v_stream_info is not None:
-        v_stream_info.set_interval(interval)
         v_stream_info.finalize()
     if a_stream_info is not None:
-        a_stream_info.set_interval(interval)
         a_stream_info.finalize()
 
     return (v_stream_info, a_stream_info)
@@ -175,7 +172,6 @@ def main():
         args.video_stream,
         args.an,
         args.audio_stream,
-        args.interval,
     )
 
     # plot
@@ -186,6 +182,7 @@ def main():
         v_stream_info,
         a_stream_info,
     )
+    av_plotter.set_interval(args.interval)
     av_plotter.plot(args.plots, args.dpi)
 
 
