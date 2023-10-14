@@ -73,7 +73,7 @@ python plot-av.py -i test.mp4 -vn
 python plot-av.py -i test.mp4 -an
 ```
 
-- Manully select streams from mutiple inputs
+- Manually select streams from mutiple inputs
 
 ```bash
 python plot-av.py -i test1.mp4 -i test2.mp4 -map 0:v:0 -map 1:a:0 
