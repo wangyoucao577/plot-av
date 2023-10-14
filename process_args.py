@@ -8,8 +8,34 @@ def unsigned_limited_float_type(arg):
     except ValueError:
         raise argparse.ArgumentTypeError("Must be a floating point number")
     if f <= 0.0:
-        raise argparse.ArgumentTypeError("Argument must be > 0.0")
+        raise argparse.ArgumentTypeError("Argument must be non-negative")
     return f
+
+
+def stream_selection_type(arg):
+    l = arg.split(":")
+    if len(l) != 3:
+        raise argparse.ArgumentTypeError("must be something like '0:v:0' or '0:a:0'")
+
+    if l[1] != "v" and l[1] != "a":
+        raise argparse.ArgumentTypeError("stream type only accepts 'v' or 'a'")
+    stream_type = l[1]
+
+    try:
+        input_index = int(l[0])
+    except ValueError:
+        raise argparse.ArgumentTypeError("input index must be a integer number")
+    if input_index < 0:
+        raise argparse.ArgumentTypeError("input index must be non-negative")
+
+    try:
+        stream_index = int(l[2])
+    except ValueError:
+        raise argparse.ArgumentTypeError("stream index must be a integer number")
+    if stream_index < 0:
+        raise argparse.ArgumentTypeError("stream index must be non-negative")
+
+    return (input_index, stream_type, stream_index)
 
 
 def process_args(available_subplots):
@@ -23,29 +49,20 @@ def process_args(available_subplots):
     parser.add_argument(
         "-i", required=True, action="append", help="input file url", dest="input"
     )
-    video_selection_group = parser.add_mutually_exclusive_group()
-    video_selection_group.add_argument(
-        "-vs",
-        "--video_stream",
-        nargs=2,
-        type=int,
-        metavar=("INPUT_INDEX", "STREAM_INDEX"),
-        help="manually select video stream, INDEX starts from 0",
-    )
-    video_selection_group.add_argument(
+    select_streams_group = parser.add_mutually_exclusive_group()
+    select_streams_group.add_argument(
         "-vn", required=False, action="store_true", help="disable video stream"
     )
-    audio_selection_group = parser.add_mutually_exclusive_group()
-    audio_selection_group.add_argument(
-        "-as",
-        "--audio_stream",
-        nargs=2,
-        type=int,
-        metavar=("INPUT_INDEX", "STREAM_INDEX"),
-        help="manually select audio stream, INDEX starts from 0",
-    )
-    audio_selection_group.add_argument(
+    select_streams_group.add_argument(
         "-an", required=False, action="store_true", help="disable audio stream"
+    )
+    select_streams_group.add_argument(
+        "-map",
+        required=False,
+        type=stream_selection_type,
+        action="append",
+        help="manually select streams, pattern 'input_index:stream_type:stream_index', e.g. '0:v:0', '0:a:0'",
+        dest="streams_selection",
     )
     parser.add_argument(
         "--dpi",

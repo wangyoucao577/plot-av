@@ -6,59 +6,86 @@ import av
 import os
 
 
-def select_stream(streams, input_index, disable=None, selection=None):
+def auto_select_stream(streams, input_index, disable=None):
     if disable:
         return None
 
-    if not streams:  # no stream available
-        return None
+    # auto selected first one
+    return None if not streams else streams[0]
 
-    if selection is None:  # auto selected first one
-        return streams[0]
 
-    # manually selection
-    if selection[0] != input_index:  # input index not match
-        return None
+def manually_select_streams(v_streams, a_streams, input_index, streams_selection):
+    selected_v_streams = []
+    selected_a_streams = []
 
-    if len(streams) <= selection[1]:  # stream index not match
-        return None
+    for ss in streams_selection:
+        if ss[0] != input_index:
+            continue
 
-    return streams[selection[1]]
+        if ss[1] == "v":
+            if len(v_streams) <= ss[2]:
+                print(f"try to select stream {ss} but not found")
+                continue
+            selected_v_streams.append(v_streams[ss[2]])
+        elif ss[1] == "a":
+            if len(a_streams) <= ss[2]:
+                print(f"try to select stream {ss} but not found")
+                continue
+            selected_a_streams.append(a_streams[ss[2]])
+        else:
+            assert False
+    return (selected_v_streams, selected_a_streams)
 
 
 def produce_streams_info(
     inputs,
     disable_video,
-    video_stream_selection,
     disable_audio,
-    audio_stream_selection,
+    streams_selection,
 ):
-    v_stream_info = a_stream_info = None
+    manually_selection = True if streams_selection is not None else False
+
+    v_streams_info = []
+    a_streams_info = []
 
     for input_index, input in enumerate(inputs):
         with av.open(input) as container:
             # select streams
             selected_streams = []
-            if v_stream_info is None:
-                selected_video_stream = select_stream(
+            selected_v_streams_info = []
+            selected_a_streams_info = []
+            if manually_selection:
+                (selected_v_streams, selected_a_streams) = manually_select_streams(
                     container.streams.video,
-                    input_index=input_index,
-                    disable=disable_video,
-                    selection=video_stream_selection,
-                )
-                if selected_video_stream is not None:
-                    v_stream_info = StreamInfo(selected_video_stream)
-                    selected_streams.append(selected_video_stream)
-            if a_stream_info is None:
-                selected_audio_stream = select_stream(
                     container.streams.audio,
-                    input_index=input_index,
-                    disable=disable_audio,
-                    selection=audio_stream_selection,
+                    input_index,
+                    streams_selection,
                 )
-                if selected_audio_stream is not None:
-                    a_stream_info = StreamInfo(selected_audio_stream)
-                    selected_streams.append(selected_audio_stream)
+                for v in selected_v_streams:
+                    selected_streams.append(v)
+                    selected_v_streams_info.append(StreamInfo(v))
+                for a in selected_a_streams:
+                    selected_streams.append(a)
+                    selected_a_streams_info.append(StreamInfo(a))
+            else:
+                if not v_streams_info:
+                    selected_v_stream = auto_select_stream(
+                        container.streams.video,
+                        input_index,
+                        disable=disable_video,
+                    )
+                    if selected_v_stream is not None:
+                        selected_v_streams_info.append(StreamInfo(selected_v_stream))
+                        selected_streams.append(selected_v_stream)
+                if not a_streams_info:
+                    selected_a_stream = auto_select_stream(
+                        container.streams.audio,
+                        input_index,
+                        disable=disable_audio,
+                    )
+                    if selected_a_stream is not None:
+                        selected_a_streams_info.append(StreamInfo(selected_a_stream))
+                        selected_streams.append(selected_a_stream)
 
             if not selected_streams:  # no need demux the input
                 continue
@@ -69,36 +96,34 @@ def produce_streams_info(
                 if packet.size == 0:
                     continue  # empty packet for flushing, ignore it
 
-                if (
-                    v_stream_info is not None
-                    and packet.stream_index == v_stream_info.stream_index
-                ):
-                    v_stream_info.capture_by_packet(packet)
-                elif (
-                    a_stream_info is not None
-                    and packet.stream_index == a_stream_info.stream_index
-                ):
-                    a_stream_info.capture_by_packet(packet)
+                for v in selected_v_streams_info:
+                    if packet.stream_index == v.stream_index:
+                        v.capture_by_packet(packet)
+                for a in selected_a_streams_info:
+                    if packet.stream_index == a.stream_index:
+                        a.capture_by_packet(packet)
+
+            v_streams_info += selected_v_streams_info
+            a_streams_info += selected_a_streams_info
 
     # finalize data
-    if v_stream_info is not None:
-        v_stream_info.finalize()
-    if a_stream_info is not None:
-        a_stream_info.finalize()
+    for v in v_streams_info:
+        v.finalize()
+    for a in a_streams_info:
+        a.finalize()
 
-    return (v_stream_info, a_stream_info)
+    return (v_streams_info, a_streams_info)
 
 
 def main():
     args = process_args(available_subplots=AVPlotter().available_subplots())
 
     # retrieve a/v stream info
-    (v_stream_info, a_stream_info) = produce_streams_info(
+    (v_streams_info, a_streams_info) = produce_streams_info(
         args.input,
         args.vn,
-        args.video_stream,
         args.an,
-        args.audio_stream,
+        args.streams_selection,
     )
 
     # plot
@@ -106,8 +131,9 @@ def main():
     window_title = os.path.basename(__file__) + " - " + input_names
     av_plotter = AVPlotter(
         window_title,
-        v_stream_info,
-        a_stream_info,
+        # workaround since avplotter doesn't support multiple streams yet, may be supported soon.
+        None if not v_streams_info else v_streams_info[0],
+        None if not a_streams_info else a_streams_info[0],
     )
     av_plotter.set_interval(args.interval)
     av_plotter.plot(args.plots, args.dpi)
