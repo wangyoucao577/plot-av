@@ -30,7 +30,12 @@ python -m pip install -U matplotlib
 ## Usage
 
 ```bash
-python plot-av.py -h
+# basic use
+$ python plot-av.py -i test.mp4
+
+
+# help 
+$ python plot-av.py -h
 usage: plot-av.py [-h] -i INPUT [-vn | -an | -map STREAMS_SELECTION] [--dpi DPI] [--plots PLOTS] [--interval INTERVAL] [--log LOGLEVEL]
 
 plot audio/video streams.
@@ -49,13 +54,7 @@ options:
   --log LOGLEVEL        log level (default: None)
 ```
 
-### Examples
-
-- Basic 
-
-```bash
-python plot-av.py -i test.mp4
-```
+### More examples
 
 - Draw your interested subplots only
 
