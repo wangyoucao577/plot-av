@@ -4,6 +4,7 @@ from process_args import process_args
 
 import av
 import os
+import logging
 
 
 def auto_select_stream(streams, input_index, disable=None):
@@ -24,12 +25,12 @@ def manually_select_streams(v_streams, a_streams, input_index, streams_selection
 
         if ss[1] == "v":
             if len(v_streams) <= ss[2]:
-                print(f"try to select stream {ss} but not found")
+                logging.warning(f"try to select stream {ss} but not found")
                 continue
             selected_v_streams.append(v_streams[ss[2]])
         elif ss[1] == "a":
             if len(a_streams) <= ss[2]:
-                print(f"try to select stream {ss} but not found")
+                logging.warning(f"try to select stream {ss} but not found")
                 continue
             selected_a_streams.append(a_streams[ss[2]])
         else:

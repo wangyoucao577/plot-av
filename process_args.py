@@ -1,4 +1,5 @@
 import argparse
+import logging
 
 
 def unsigned_limited_float_type(arg):
@@ -80,17 +81,28 @@ def process_args(available_subplots):
         default=1.0,
         help="calculation interval in seconds for statistics metrics, such as bitrate, fps, etc.",
     )
+    parser.add_argument("--log", dest="loglevel", help="log level")
     args = parser.parse_args()
     # print(args)
+
+    # config log level
+    if args.loglevel:
+        # assuming loglevel is bound to the string value obtained from the
+        # command line argument. Convert to upper case to allow the user to
+        # specify --log=DEBUG or --log=debug
+        numeric_level = getattr(logging, args.loglevel.upper(), None)
+        if not isinstance(numeric_level, int):
+            raise ValueError("Invalid log level: %s" % args.loglevel)
+        logging.basicConfig(level=numeric_level)
 
     # validate plots
     subplots = []
     for p in args.plots.split(PLOT_SPLIT_DELIMETER):
         if not p in available_subplots:
-            print(f"warning: remove invalid plot '{p}'")
+            logging.warning(f"warning: remove invalid plot '{p}'")
             continue
         if p in subplots:
-            print(f"warning: remove duplicate plot '{p}'")
+            logging.warning(f"warning: remove duplicate plot '{p}'")
             continue
         subplots.append(p)
 
