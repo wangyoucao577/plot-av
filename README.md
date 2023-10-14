@@ -1,7 +1,6 @@
 # plot-av
 Plot details of Audio/Video streams of media files to help you gain better insights of them.      
 
-## Example
 
 ![](docs/images/plot-av.png)
 
@@ -30,6 +29,28 @@ python -m pip install -U matplotlib
 
 ## Usage
 
+```bash
+python plot-av.py -h
+usage: plot-av.py [-h] -i INPUT [-vn | -an | -map STREAMS_SELECTION] [--dpi DPI] [--plots PLOTS] [--interval INTERVAL] [--log LOGLEVEL]
+
+plot audio/video streams.
+
+options:
+  -h, --help            show this help message and exit
+  -i INPUT              input file url (default: None)
+  -vn                   disable video stream (default: False)
+  -an                   disable audio stream (default: False)
+  -map STREAMS_SELECTION
+                        manually select streams, pattern 'input_index:stream_type:stream_index', e.g. '0:v:0', '0:a:0' (default: None)
+  --dpi DPI             resolution of the figure. If not provided, defaults to 100 by matplotlib. (default: None)
+  --plots PLOTS         subplots to show, seperate by ','. options: dts,pts,size,bitrate,fps,avsync,dts_delta,duration (default:
+                        dts,pts,size,bitrate,fps,avsync,dts_delta,duration)
+  --interval INTERVAL   calculation interval in seconds for statistics metrics, such as bitrate, fps, etc. (default: 1.0)
+  --log LOGLEVEL        log level (default: None)
+```
+
+### Examples
+
 - Basic 
 
 ```bash
@@ -41,3 +62,20 @@ python plot-av.py -i test.mp4
 ```bash
 python plot-av.py -i test.mp4 --plots dts,pts
 ```
+
+- Draw video or audio only 
+
+```bash
+# disable video
+python plot-av.py -i test.mp4 -vn
+
+# disable audio
+python plot-av.py -i test.mp4 -an
+```
+
+- Manully select streams from mutiple inputs
+
+```bash
+python plot-av.py -i test1.mp4 -i test2.mp4 -map 0:v:0 -map 1:a:0 
+```
+
