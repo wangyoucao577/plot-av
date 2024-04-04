@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling", "hatch_vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["plot-av"]
+
+[project]
+name = "plot-av"
+dynamic = ["version"]
+dependencies = [
+  "pyav",
+  "matplotlib",
+]
+authors = [
+  { name="Jay Zhang", email="wangyoucao577@gmail.com" },
+]
+description = "Plot Audio/Video streams for better insights"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Framework :: Matplotlib",
+]
+
+[project.scripts]
+plot-av = "plot-av:main"
+
+
+[project.urls]
+Homepage = "https://github.com/wangyoucao577/plot-av"
+Issues = "https://github.com/wangyoucao577/plot-av/issues"
