@@ -6,10 +6,10 @@ build-backend = "hatchling.build"
 source = "vcs"
 
 [tool.hatch.build.targets.wheel]
-packages = ["plot-av"]
+packages = ["plot_av"]
 
 [project]
-name = "plot-av"
+name = "plot_av"
 dynamic = ["version"]
 dependencies = [
   "pyav",
@@ -30,7 +30,7 @@ classifiers = [
 ]
 
 [project.scripts]
-plot-av = "plot-av:main"
+plot-av = "plot_av.plot_av:main"
 
 
 [project.urls]

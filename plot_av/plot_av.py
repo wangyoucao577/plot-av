@@ -1,6 +1,6 @@
-from stream_info import StreamInfo
-from av_plotter import AVPlotter
-from process_args import process_args
+from plot_av.stream_info import StreamInfo
+from plot_av.av_plotter import AVPlotter
+from plot_av.process_args import process_args
 
 import av
 import os
