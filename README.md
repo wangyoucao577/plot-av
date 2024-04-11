@@ -1,4 +1,4 @@
-[![Build and Publish](https://github.com/wangyoucao577/plot-av/actions/workflows/build_publish.yml/badge.svg)](https://github.com/wangyoucao577/plot-av/actions/workflows/build_publish.yml) [![PyPI version](https://badge.fury.io/py/plot-av.svg)](https://badge.fury.io/py/plot-av)
+[![Build and Publish](https://github.com/wangyoucao577/plot-av/actions/workflows/build_publish.yml/badge.svg)](https://github.com/wangyoucao577/plot-av/actions/workflows/build_publish.yml) [![PyPI version](https://badge.fury.io/py/plot-av.svg)](https://badge.fury.io/py/plot-av) ![](https://anaconda.org/conda-forge/plot-av/badges/version.svg)
 
 # plot-av
 Plot details of Audio/Video streams of media files to help you gain better insights of them.      
@@ -8,8 +8,14 @@ Plot details of Audio/Video streams of media files to help you gain better insig
 
 ## Installation 
 
+### Pip
 ```bash
 $ pip install plot-av
+```
+
+### Conda
+```bash
+$ conda install plot-av -c conda-forge
 ```
 
 ## Usage
